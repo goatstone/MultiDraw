@@ -42,7 +42,7 @@ public class AppBackend {
     private static final int MAX_ATTEMPTS = 5;
     private static final int BACKOFF_MILLI_SECONDS = 2000;
     private static final Random random = new Random();
-    static final String SERVER_URL = "http://jade-goatstone.appspot.com";
+    static final String SERVER_URL = "http://clay-goatstone.appspot.com";
 
     public static void doPing(){
         new AsyncTask<Void, Void, String>() {

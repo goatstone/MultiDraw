@@ -24,7 +24,7 @@ public class Util {
     private static final String PROPERTY_REG_ID = "registration_id";
     private static GoogleCloudMessaging gcm;
     private static String GCM_RegistrationID;
-    private static final String PROJECT_NUMBER = "272798094415";
+    private static final String PROJECT_NUMBER = "1050350966676";
     private static Context context;
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
