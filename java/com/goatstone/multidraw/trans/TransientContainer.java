@@ -10,6 +10,7 @@ public class TransientContainer {
     private Integer c = null;
     public BackgroundProps backgroundProps;
     public TextMessage textMessage;
+    public Stroke stroke;
 
     public TransientContainer() {
     }
@@ -28,5 +29,9 @@ public class TransientContainer {
     public TransientContainer(TextMessage textMessage) {
         date = new Date();
         this.textMessage = textMessage;
+    }
+    public TransientContainer(Stroke stroke) {
+        date = new Date();
+        this.stroke = stroke;
     }
 }

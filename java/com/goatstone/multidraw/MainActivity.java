@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.goatstone.multidraw.trans.BackgroundProps;
+import com.goatstone.multidraw.trans.Stroke;
 import com.goatstone.multidraw.trans.TextMessage;
 import com.goatstone.multidraw.trans.TransientContainer;
 import com.google.gson.Gson;
@@ -82,6 +83,11 @@ public class MainActivity extends Activity {
             final TextMessage textMessage = new TextMessage("this will be a stroke!");
             TransientContainer transientContainer = new TransientContainer(textMessage);
             AppBackend.sendJSON(gson.toJson(transientContainer));
+
+            final Stroke stroke = new Stroke();
+            TransientContainer transientContainer1 = new TransientContainer(stroke);
+            AppBackend.sendJSON(gson.toJson(transientContainer1));
+
             messageLogDisplay.append(" - touch - ");
             return false;
         }
@@ -115,6 +121,10 @@ public class MainActivity extends Activity {
                     // Add a text message to the messaging log
                     if (transientPackage1.textMessage != null) {
                         messageLogDisplay.append((transientPackage1.textMessage.message));
+                    }
+                    if (transientPackage1.stroke != null) {
+                        messageLogDisplay.append(("stroke coming in"));
+                        messageLogDisplay.append((transientPackage1.stroke.strokePoints).toString());
                     }
                     // Receive a Stroke and display it
                 } // END OK
