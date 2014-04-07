@@ -8,10 +8,12 @@ import android.os.ResultReceiver;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.goatstone.multidraw.trans.BackgroundProps;
@@ -22,68 +24,76 @@ import com.google.gson.Gson;
 
 public class MainActivity extends Activity {
 
-
-    public static TextView messageLogDisplay;
-    private static MainResultReceiver mainResultReceiver;
-    private Button redButton, greenButton, blueButton, pingButton, clearButton;
-    private View rootView;
-    Gson gson = new Gson();
+    private static TextView messageLogDisplay;
+    private static  MainResultReceiver mainResultReceiver;
+    private Button redButton, greenButton, blueButton, clearButton;
+    private Gson gson = new Gson();
+    private LinearLayout myLayout;
+    private EditText editText;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // setup layout
         setContentView(R.layout.main);
+        myLayout = (LinearLayout) findViewById(R.id.layout1);
+        myLayout.setOnTouchListener(onTouchListener);
         messageLogDisplay = (TextView) findViewById(R.id.display);
-        rootView = this.findViewById(android.R.id.content).getRootView();
-
+        messageLogDisplay.setText("init");
         redButton = (Button) findViewById(R.id.red);
         greenButton = (Button) findViewById(R.id.green);
         blueButton = (Button) findViewById(R.id.blue);
         clearButton = (Button) findViewById(R.id.clear);
+        editText = (EditText) findViewById(R.id.editText);
+        editText.setOnEditorActionListener(onEditorActionListener);
 
-        redButton.requestFocus();
-
+        // set up registration / serviceReceiver
         if ((Util.getRegistrationId(getApplicationContext())).isEmpty()) {
             Util.registerInBackground(getApplicationContext());
         }
-
-        messageLogDisplay.setText(   Util.getRegistrationId(getApplicationContext())  );
-
         setupServiceReceiver();
 
-        setMainViewBackground(Color.argb(255, 100,100,100)) ;
-
-        EditText editText = (EditText) findViewById(R.id.editText);
-
-        editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                boolean handled = false;
-
-                if (actionId == EditorInfo.IME_ACTION_DONE && !v.getText().equals("")) {
-                    //handled = true; // setting to true leaves the keyboard open on Samsung Tab
-                    final TextMessage textMessage = new TextMessage(v.getText().toString());
-                    TransientContainer transientContainer = new TransientContainer(textMessage);
-                    AppBackend.sendJSON(gson.toJson(transientContainer));
-                    v.setText("");
-                    redButton.requestFocus();
-                }
-                return handled;
-            }
-        });
-
+        // modify layout
+        setMainViewBackground(Color.argb(255, 100, 100, 100));
+        messageLogDisplay.setText(Util.getRegistrationId(getApplicationContext()));
     }
+
+    private TextView.OnEditorActionListener onEditorActionListener = new TextView.OnEditorActionListener() {
+        @Override
+        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+            boolean handled = false;
+
+            if (actionId == EditorInfo.IME_ACTION_DONE && !v.getText().equals("")) {
+                //handled = true; // setting to true leaves the keyboard open on Samsung Tab
+                final TextMessage textMessage = new TextMessage(v.getText().toString());
+                TransientContainer transientContainer = new TransientContainer(textMessage);
+                AppBackend.sendJSON(gson.toJson(transientContainer));
+                v.setText("");
+                redButton.requestFocus();
+            }
+            return handled;
+        }
+    };
+
+    private View.OnTouchListener onTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            final TextMessage textMessage = new TextMessage("this will be a stroke!");
+            TransientContainer transientContainer = new TransientContainer(textMessage);
+            AppBackend.sendJSON(gson.toJson(transientContainer));
+            messageLogDisplay.append(" - touch - ");
+            return false;
+        }
+    };
 
     private void setMainViewBackground(int color) {
-        rootView.setBackgroundColor(color);
+        myLayout.setBackgroundColor(color);
     }
-
 
     private void setupServiceReceiver() {
 
         mainResultReceiver = new MainResultReceiver(new Handler());
-
         mainResultReceiver.setReceiver(new MainResultReceiver.Receiver() {
 
             @Override
@@ -97,14 +107,16 @@ public class MainActivity extends Activity {
                     if (mainBundleString == null) return;
 
                     TransientContainer transientPackage1 = gson.fromJson(mainBundleString, TransientContainer.class);
+                    // modify the background
                     if (transientPackage1.backgroundProps != null) {
                         messageLogDisplay.append(String.valueOf(transientPackage1.backgroundProps.getHexColor()));
                         setMainViewBackground(transientPackage1.backgroundProps.getColor());
                     }
+                    // Add a text message to the messaging log
                     if (transientPackage1.textMessage != null) {
                         messageLogDisplay.append((transientPackage1.textMessage.message));
                     }
-
+                    // Receive a Stroke and display it
                 } // END OK
             }
         });
@@ -161,16 +173,9 @@ public class MainActivity extends Activity {
         super.onResume();
         Util.checkPlayServices(getApplicationContext());
     }
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.main);
-//    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
