@@ -23,6 +23,7 @@
             android:value="4030500" />
 
         <activity
+            android:theme="@style/Theme.AppCompat.Light"
             android:name=".MainActivity"
             android:label="@string/app_name"
             android:configChanges="keyboardHidden|screenSize"
