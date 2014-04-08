@@ -1,7 +1,12 @@
 package com.goatstone.multidraw;
 
+import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
@@ -10,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
@@ -31,6 +37,7 @@ public class MainActivity extends Activity {
     private Gson gson = new Gson();
     private LinearLayout myLayout;
     private EditText editText;
+    private CustomDrawableView customDrawableView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,8 +65,31 @@ public class MainActivity extends Activity {
         // modify layout
         setMainViewBackground(Color.argb(255, 100, 100, 100));
         messageLogDisplay.setText(Util.getRegistrationId(getApplicationContext()));
-    }
 
+        customDrawableView = new CustomDrawableView(getApplicationContext());
+       addContentView(customDrawableView, new ViewGroup.LayoutParams(500,500));
+
+    }
+//    public class CustomDrawableView extends View {
+//        private ShapeDrawable mDrawable;
+//
+//        public CustomDrawableView(Context context) {
+//            super(context);
+//
+//            int x = 10;
+//            int y = 10;
+//            int width = 300;
+//            int height = 50;
+//
+//            mDrawable = new ShapeDrawable(new OvalShape());
+//            mDrawable.getPaint().setColor(0xff74AC23);
+//            mDrawable.setBounds(x, y, x + width, y + height);
+//        }
+//
+//        protected void onDraw(Canvas canvas) {
+//            mDrawable.draw(canvas);
+//        }
+//    }
     private TextView.OnEditorActionListener onEditorActionListener = new TextView.OnEditorActionListener() {
         @Override
         public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -89,6 +119,8 @@ public class MainActivity extends Activity {
             AppBackend.sendJSON(gson.toJson(transientContainer1));
 
             messageLogDisplay.append(" - touch - ");
+            customDrawableView.setX(event.getX());
+
             return false;
         }
     };
@@ -123,7 +155,7 @@ public class MainActivity extends Activity {
                         messageLogDisplay.append((transientPackage1.textMessage.message));
                     }
                     if (transientPackage1.stroke != null) {
-                        messageLogDisplay.append(("stroke coming in"));
+                        messageLogDisplay.append(("stroke coming in !!!!!!! !!!!!!"));
                         messageLogDisplay.append((transientPackage1.stroke.strokePoints).toString());
                     }
                     // Receive a Stroke and display it
