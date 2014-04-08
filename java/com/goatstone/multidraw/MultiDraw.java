@@ -15,7 +15,7 @@ public class MultiDraw {
     private List<Stroke> strokes;
 
     public MultiDraw() {
-        strokes = new ArrayList<>();
+        strokes = new ArrayList<Stroke>();
     }
 
     public boolean addStroke(Stroke stroke){

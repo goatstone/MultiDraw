@@ -1,15 +1,11 @@
 package com.goatstone.multidraw;
 
-import android.app.ActionBar;
 import android.app.Activity;
-import android.content.Context;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.OvalShape;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,11 +24,14 @@ import com.goatstone.multidraw.trans.TextMessage;
 import com.goatstone.multidraw.trans.TransientContainer;
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class MainActivity extends Activity {
 
     private static TextView messageLogDisplay;
-    private static  MainResultReceiver mainResultReceiver;
+    private static MainResultReceiver mainResultReceiver;
     private Button redButton, greenButton, blueButton, clearButton;
     private Gson gson = new Gson();
     private LinearLayout myLayout;
@@ -67,29 +66,10 @@ public class MainActivity extends Activity {
         messageLogDisplay.setText(Util.getRegistrationId(getApplicationContext()));
 
         customDrawableView = new CustomDrawableView(getApplicationContext());
-       addContentView(customDrawableView, new ViewGroup.LayoutParams(500,500));
+        addContentView(customDrawableView, new ViewGroup.LayoutParams(550, 900));
 
     }
-//    public class CustomDrawableView extends View {
-//        private ShapeDrawable mDrawable;
-//
-//        public CustomDrawableView(Context context) {
-//            super(context);
-//
-//            int x = 10;
-//            int y = 10;
-//            int width = 300;
-//            int height = 50;
-//
-//            mDrawable = new ShapeDrawable(new OvalShape());
-//            mDrawable.getPaint().setColor(0xff74AC23);
-//            mDrawable.setBounds(x, y, x + width, y + height);
-//        }
-//
-//        protected void onDraw(Canvas canvas) {
-//            mDrawable.draw(canvas);
-//        }
-//    }
+
     private TextView.OnEditorActionListener onEditorActionListener = new TextView.OnEditorActionListener() {
         @Override
         public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -107,21 +87,53 @@ public class MainActivity extends Activity {
         }
     };
 
+    private List<int[]> currentStokes;
     private View.OnTouchListener onTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            final TextMessage textMessage = new TextMessage("this will be a stroke!");
-            TransientContainer transientContainer = new TransientContainer(textMessage);
-            AppBackend.sendJSON(gson.toJson(transientContainer));
+//            Log.i(AppUtil.getTagName(), String.valueOf(event.getAction()));
 
-            final Stroke stroke = new Stroke();
-            TransientContainer transientContainer1 = new TransientContainer(stroke);
-            AppBackend.sendJSON(gson.toJson(transientContainer1));
 
-            messageLogDisplay.append(" - touch - ");
-            customDrawableView.setX(event.getX());
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN: {
+                    currentStokes = new ArrayList<int[]>();
+                    currentStokes.add(new int[]{(int) event.getX(), (int) event.getY()});
+                    break;
+                }
+                case MotionEvent.ACTION_MOVE: {
+                    currentStokes.add(new int[]{(int) event.getX(), (int) event.getY()});
+                    break;
+                }
+                case MotionEvent.ACTION_UP: {
+                    Log.i(AppUtil.getTagName(), "xx" + currentStokes.size());
 
-            return false;
+                    final Stroke stroke = new Stroke();
+                    stroke.strokePoints = currentStokes;
+
+                    TransientContainer transientContainer = new TransientContainer(stroke);
+
+                    if (transientContainer.stroke != null) {
+                        Log.i(AppUtil.getTagName(), "stroke has been made and set!!!!!!! !!!!!!");
+
+                        // Make the transientContainer into a string to send it to the backend.
+                        String gsonString = gson.toJson(transientContainer);
+                        AppBackend.sendJSON(gsonString);
+                        Log.i(AppUtil.getTagName(), gsonString);
+
+                        // convert back to Object TransientContainer
+                        TransientContainer newTransientContainer = gson.fromJson(gsonString, TransientContainer.class);
+                        Log.i(AppUtil.getTagName(), String.valueOf(transientContainer.stroke.strokePoints.size()));
+
+
+                        // Add the transientContainer.stroke to the customDrawableView.
+//                        customDrawableView.addToStrokePoints((ArrayList<int[]>) newTransientContainer.stroke.strokePoints);
+//                        customDrawableView.invalidate();
+
+                    }
+                    break;
+                }
+            }
+            return true;
         }
     };
 
@@ -156,7 +168,19 @@ public class MainActivity extends Activity {
                     }
                     if (transientPackage1.stroke != null) {
                         messageLogDisplay.append(("stroke coming in !!!!!!! !!!!!!"));
-                        messageLogDisplay.append((transientPackage1.stroke.strokePoints).toString());
+                        //messageLogDisplay.append((transientPackage1.stroke.strokePoints).toString());
+                        customDrawableView.addToStrokePoints((ArrayList<int[]>) transientPackage1.stroke.strokePoints);
+//                        customDrawableView.addToStrokePoints((ArrayList<int[]>) transientContainer.stroke.strokePoints);
+                        customDrawableView.invalidate();
+
+//                        TransientContainer newTransientContainer = gson.fromJson(gsonString, TransientContainer.class);
+                        Log.i(AppUtil.getTagName(), String.valueOf(transientPackage1.stroke.strokePoints.size()));
+
+                        // Add the transientContainer.stroke to the customDrawableView.
+                        customDrawableView.addToStrokePoints((ArrayList<int[]>) transientPackage1.stroke.strokePoints);
+                        customDrawableView.invalidate();
+
+
                     }
                     // Receive a Stroke and display it
                 } // END OK

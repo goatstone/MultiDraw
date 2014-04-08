@@ -30,8 +30,18 @@ public class TransientContainer {
         date = new Date();
         this.textMessage = textMessage;
     }
+
     public TransientContainer(Stroke stroke) {
         date = new Date();
         this.stroke = stroke;
+    }
+
+    @Override
+    public String toString() {
+        String s = "txtMsg: " + textMessage;
+        if (stroke != null) {
+            s += "";
+        }
+        return s;
     }
 }
