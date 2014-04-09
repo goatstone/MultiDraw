@@ -29,11 +29,11 @@ public class Util {
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
-    public static boolean checkPlayServices(Context context) {
+    public static boolean checkPlayServices(Context context, Activity activity) {
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
         if (resultCode != ConnectionResult.SUCCESS) {
             if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-                GooglePlayServicesUtil.getErrorDialog(resultCode, (Activity) context,
+                GooglePlayServicesUtil.getErrorDialog(resultCode, activity,
                         PLAY_SERVICES_RESOLUTION_REQUEST).show();
             } else {
                 Log.i(AppUtil.getTagName(), "Device not supported.");

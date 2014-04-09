@@ -1,6 +1,5 @@
 package com.goatstone.multidraw;
 
-import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -246,7 +245,8 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Util.checkPlayServices(getApplicationContext());
+
+        Util.checkPlayServices(getApplicationContext(), this);
     }
 
     @Override
