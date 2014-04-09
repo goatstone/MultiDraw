@@ -24,12 +24,12 @@ public class CustomDrawableView extends View {
     public CustomDrawableView(Context context) {
         super(context);
 
-        x = 0;
+        x = 20;
         y = 200;
         int width = 900;
         int height = 500;
         strokes = new ArrayList<int[]>();
-        strokes.add(new int[]{1, 2});
+        //strokes.add(new int[]{1, 2});
         strokes.add(new int[]{100, 200});
 
         paint = new Paint();
@@ -38,7 +38,6 @@ public class CustomDrawableView extends View {
 
         shapeDrawable = new ShapeDrawable(new OvalShape());
         shapeDrawable.getPaint().setColor(0xff74AC23);
-        shapeDrawable.setBounds(x, y, x + width, y + height);
     }
 
     public List<int[]> getStrokePoints() {
@@ -47,11 +46,13 @@ public class CustomDrawableView extends View {
 
     protected void onDraw(Canvas canvas) {
         setBackgroundColor(Color.argb(150, 0, 0, 200));
-//        canvas.drawText("hello", x, 100, shapeDrawable.getPaint());
         for (int[] i : strokes) {
-            shapeDrawable.setBounds(i[0], i[1], i[0] + 20, i[1] + 20);
+            final int x = i[0] * MultiDraw.screenMatchRatio;
+            final int y = i[1] * MultiDraw.screenMatchRatio;
+            final int size = 20*MultiDraw.screenMatchRatio;
+
+            shapeDrawable.setBounds(x, y, x + size, y + size);
             shapeDrawable.draw(canvas);
-//            canvas.drawText("!", i[0], i[1], paint);
         }
     }
 

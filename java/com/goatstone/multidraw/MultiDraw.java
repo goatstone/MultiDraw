@@ -13,6 +13,8 @@ import java.util.List;
  */
 public class MultiDraw {
     private List<Stroke> strokes;
+    public static int screenMatchRatio = 1;
+//    public int screenMatchRatio = (int)Math.floor( metrics.densityDpi/160 );
 
     public MultiDraw() {
         strokes = new ArrayList<Stroke>();

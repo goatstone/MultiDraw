@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.support.v7.app.ActionBarActivity;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -34,7 +35,7 @@ public class MainActivity extends ActionBarActivity {
     private static MainResultReceiver mainResultReceiver;
     private Button redButton, greenButton, blueButton, clearButton;
     private Gson gson = new Gson();
-    private LinearLayout myLayout;
+    private LinearLayout linearLayout;
     private EditText editText;
     private CustomDrawableView customDrawableView;
     private ColorSelectDialog colorSelectDialog;
@@ -46,14 +47,10 @@ public class MainActivity extends ActionBarActivity {
 
         // setup layout
         setContentView(R.layout.main);
-        myLayout = (LinearLayout) findViewById(R.id.layout1);
-        myLayout.setOnTouchListener(onTouchListener);
+        linearLayout = (LinearLayout) findViewById(R.id.layout1);
+        linearLayout.setOnTouchListener(onTouchListener);
         messageLogDisplay = (TextView) findViewById(R.id.display);
         messageLogDisplay.setText("init");
-//        redButton = (Button) findViewById(R.id.red);
-//        greenButton = (Button) findViewById(R.id.green);
-//        blueButton = (Button) findViewById(R.id.blue);
-//        clearButton = (Button) findViewById(R.id.clear);
         editText = (EditText) findViewById(R.id.editText);
         editText.setOnEditorActionListener(onEditorActionListener);
 
@@ -67,16 +64,28 @@ public class MainActivity extends ActionBarActivity {
         setMainViewBackground(Color.argb(255, 100, 100, 100));
         messageLogDisplay.setText(Util.getRegistrationId(getApplicationContext()));
 
-        customDrawableView = new CustomDrawableView(getApplicationContext());
-        addContentView(customDrawableView, new ViewGroup.LayoutParams(550, 900));
-
-        colorSelectDialog = new ColorSelectDialog(myLayout);
+        colorSelectDialog = new ColorSelectDialog(linearLayout);
         colorSelectDialog.setArguments(getIntent().getExtras());
 
         logViewDialog = new LogViewDialog(messageLogDisplay);
         logViewDialog.setArguments(getIntent().getExtras());
 
-     }
+        ////
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+
+        customDrawableView = new CustomDrawableView(getApplicationContext());
+        //addContentView(customDrawableView, new ViewGroup.LayoutParams(linearLayout.getWidth(), linearLayout.getHeight()));
+        int drawAreaWidth = 550;
+        int drawAreaHeight = 800;
+        int screenMatchRatio = (int)Math.floor( metrics.densityDpi/160 );
+        MultiDraw.screenMatchRatio = (int)Math.floor( metrics.densityDpi/160 );
+        Log.i(AppUtil.getTagName(),  "density: "+String.valueOf( metrics.densityDpi ) );
+        Log.i(AppUtil.getTagName(),  "screenMatchRatio: "+ ( Math.floor( metrics.densityDpi/160 ) ) );
+        Log.i(AppUtil.getTagName(),  "MultiDraw.screenMatchRatio : "+ MultiDraw.screenMatchRatio  );
+
+        addContentView(customDrawableView, new ViewGroup.LayoutParams(drawAreaWidth*screenMatchRatio, drawAreaHeight*screenMatchRatio));
+
+    }
 
     private TextView.OnEditorActionListener onEditorActionListener = new TextView.OnEditorActionListener() {
         @Override
@@ -89,7 +98,6 @@ public class MainActivity extends ActionBarActivity {
                 TransientContainer transientContainer = new TransientContainer(textMessage);
                 AppBackend.sendJSON(gson.toJson(transientContainer));
                 v.setText("");
-//                redButton.requestFocus();
             }
             return handled;
         }
@@ -99,17 +107,17 @@ public class MainActivity extends ActionBarActivity {
     private View.OnTouchListener onTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-//            Log.i(AppUtil.getTagName(), String.valueOf(event.getAction()));
-
 
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
                     currentStokes = new ArrayList<int[]>();
-                    currentStokes.add(new int[]{(int) event.getX(), (int) event.getY()});
+                    currentStokes.add(
+                            new int[]{(int) event.getX()/MultiDraw.screenMatchRatio, (int) event.getY()/MultiDraw.screenMatchRatio});
                     break;
                 }
                 case MotionEvent.ACTION_MOVE: {
-                    currentStokes.add(new int[]{(int) event.getX(), (int) event.getY()});
+                    currentStokes.add(
+                            new int[]{(int) event.getX()/MultiDraw.screenMatchRatio, (int) event.getY()/MultiDraw.screenMatchRatio});
                     break;
                 }
                 case MotionEvent.ACTION_UP: {
@@ -146,7 +154,7 @@ public class MainActivity extends ActionBarActivity {
     };
 
     public void setMainViewBackground(int color) {
-        myLayout.setBackgroundColor(color);
+        linearLayout.setBackgroundColor(color);
     }
 
     private void setupServiceReceiver() {
