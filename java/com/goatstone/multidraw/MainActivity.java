@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.goatstone.multidraw.dialogs.BrushColorSelectDialog;
 import com.goatstone.multidraw.trans.BackgroundProps;
 import com.goatstone.multidraw.trans.Stroke;
 import com.goatstone.multidraw.trans.TextMessage;
@@ -40,6 +41,7 @@ public class MainActivity extends ActionBarActivity {
     private CustomDrawableView customDrawableView;
     private ColorSelectDialog colorSelectDialog;
     private LogViewDialog logViewDialog;
+    private BrushColorSelectDialog brushColorSelectDialog;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -70,20 +72,25 @@ public class MainActivity extends ActionBarActivity {
         logViewDialog = new LogViewDialog(messageLogDisplay);
         logViewDialog.setArguments(getIntent().getExtras());
 
+        brushColorSelectDialog = new BrushColorSelectDialog(linearLayout);
+
         ////
         DisplayMetrics metrics = getResources().getDisplayMetrics();
 
         customDrawableView = new CustomDrawableView(getApplicationContext());
         //addContentView(customDrawableView, new ViewGroup.LayoutParams(linearLayout.getWidth(), linearLayout.getHeight()));
-        int drawAreaWidth = 550;
-        int drawAreaHeight = 800;
-        int screenMatchRatio = (int)Math.floor( metrics.densityDpi/160 );
-        MultiDraw.screenMatchRatio = (int)Math.floor( metrics.densityDpi/160 );
-        Log.i(AppUtil.getTagName(),  "density: "+String.valueOf( metrics.densityDpi ) );
-        Log.i(AppUtil.getTagName(),  "screenMatchRatio: "+ ( Math.floor( metrics.densityDpi/160 ) ) );
-        Log.i(AppUtil.getTagName(),  "MultiDraw.screenMatchRatio : "+ MultiDraw.screenMatchRatio  );
+        int drawAreaWidth = 580;
+        int drawAreaHeight = 850;
+        int screenMatchRatio = (int) Math.floor(metrics.densityDpi / 160);
+        MultiDraw.screenMatchRatio = (int) Math.floor(metrics.densityDpi / 160);
+        Log.i(AppUtil.getTagName(), "density: " + String.valueOf(metrics.densityDpi));
+        Log.i(AppUtil.getTagName(), "screenMatchRatio: " + (Math.floor(metrics.densityDpi / 160)));
+        Log.i(AppUtil.getTagName(), "MultiDraw.screenMatchRatio : " + MultiDraw.screenMatchRatio);
 
-        addContentView(customDrawableView, new ViewGroup.LayoutParams(drawAreaWidth*screenMatchRatio, drawAreaHeight*screenMatchRatio));
+        customDrawableView.setX(10);
+        customDrawableView.setY(10);
+        addContentView(customDrawableView, new ViewGroup.LayoutParams(drawAreaWidth * screenMatchRatio, drawAreaHeight * screenMatchRatio));
+
 
     }
 
@@ -103,27 +110,41 @@ public class MainActivity extends ActionBarActivity {
         }
     };
 
-    private List<int[]> currentStokes;
     private View.OnTouchListener onTouchListener = new View.OnTouchListener() {
+        final List<int[]> currentStokes = new ArrayList<int[]>();
+        final Stroke stroke = new Stroke();
+
         @Override
         public boolean onTouch(View v, MotionEvent event) {
+            stroke.color = Color.argb(255, 255, 0, 0);
 
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
-                    currentStokes = new ArrayList<int[]>();
                     currentStokes.add(
-                            new int[]{(int) event.getX()/MultiDraw.screenMatchRatio, (int) event.getY()/MultiDraw.screenMatchRatio});
+                            new int[]{(int) event.getX() / MultiDraw.screenMatchRatio, (int) event.getY() / MultiDraw.screenMatchRatio});
+
+                    List ar = new ArrayList();
+                    ar.add(new int[]{(int) event.getX(), (int) event.getY()});
+                    customDrawableView.setBrushColor(Color.argb(127, 255, 0, 0));
+                    customDrawableView.addToStrokePoints(ar);
+                    customDrawableView.invalidate();
+
                     break;
                 }
                 case MotionEvent.ACTION_MOVE: {
                     currentStokes.add(
-                            new int[]{(int) event.getX()/MultiDraw.screenMatchRatio, (int) event.getY()/MultiDraw.screenMatchRatio});
+                            new int[]{(int) event.getX() / MultiDraw.screenMatchRatio, (int) event.getY() / MultiDraw.screenMatchRatio});
+
+                    List ar = new ArrayList();
+                    ar.add(new int[]{(int) event.getX(), (int) event.getY()});
+                    customDrawableView.addToStrokePoints(ar);
+                    customDrawableView.invalidate();
+
                     break;
                 }
                 case MotionEvent.ACTION_UP: {
                     Log.i(AppUtil.getTagName(), "xx" + currentStokes.size());
 
-                    final Stroke stroke = new Stroke();
                     stroke.strokePoints = currentStokes;
 
                     TransientContainer transientContainer = new TransientContainer(stroke);
@@ -185,9 +206,8 @@ public class MainActivity extends ActionBarActivity {
                     if (transientPackage1.stroke != null) {
                         messageLogDisplay.append(("stroke coming in !!!!!!! !!!!!!"));
                         //messageLogDisplay.append((transientPackage1.stroke.strokePoints).toString());
-                        customDrawableView.addToStrokePoints((ArrayList<int[]>) transientPackage1.stroke.strokePoints);
-//                        customDrawableView.addToStrokePoints((ArrayList<int[]>) transientContainer.stroke.strokePoints);
-                        customDrawableView.invalidate();
+//                        customDrawableView.addToStrokePoints((ArrayList<int[]>) transientPackage1.stroke.strokePoints);
+//                         customDrawableView.invalidate();
 
 //                        TransientContainer newTransientContainer = gson.fromJson(gsonString, TransientContainer.class);
                         Log.i(AppUtil.getTagName(), String.valueOf(transientPackage1.stroke.strokePoints.size()));
@@ -271,17 +291,25 @@ public class MainActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         switch (item.getItemId()) {
-            case R.id.action_background:
-                Log.i(AppUtil.getTagName(), "background - - - -");
-                colorSelectDialog.show(getFragmentManager(), "DrawLab");
+//            case R.id.action_background:
+//                Log.i(AppUtil.getTagName(), "background - - - -");
+//                colorSelectDialog.show(getFragmentManager(), "DrawLab");
+//                return true;
+            case R.id.action_color:
+                Log.i(AppUtil.getTagName(), "action_color :  - - - -");
+                brushColorSelectDialog.show(getFragmentManager(), "MultiDraw: color");
+                return true;
+            case R.id.action_clear:
+                Log.i(AppUtil.getTagName(), "action_clear : - - - -");
+                return true;
+            case R.id.action_message:
+                Log.i(AppUtil.getTagName(), "message - - - -");
+//                sizeSelectDialog.show(getFragmentManager(), "DrawLab");
+//BrushColorSelectDialog
                 return true;
             case R.id.action_log:
                 Log.i(AppUtil.getTagName(), "log - - - -");
                 logViewDialog.show(getFragmentManager(), "MultiDraw : log");
-//                sizeSelectDialog.show(getFragmentManager(), "DrawLab");
-                return true;
-            case R.id.action_message:
-                Log.i(AppUtil.getTagName(), "message - - - -");
 //                sizeSelectDialog.show(getFragmentManager(), "DrawLab");
                 return true;
             default:

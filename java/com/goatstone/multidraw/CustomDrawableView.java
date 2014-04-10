@@ -20,6 +20,8 @@ public class CustomDrawableView extends View {
     private int y;
     private List<int[]> strokes;
     private Paint paint;
+    private int brushColor;
+    private int backgroundColor;
 
     public CustomDrawableView(Context context) {
         super(context);
@@ -31,13 +33,14 @@ public class CustomDrawableView extends View {
         strokes = new ArrayList<int[]>();
         //strokes.add(new int[]{1, 2});
         strokes.add(new int[]{100, 200});
+        brushColor = Color.argb(255, 0, 0, 255);
+        backgroundColor = Color.argb(255, 250, 250, 250);
 
         paint = new Paint();
         paint.setColor(Color.argb(255, 244, 0, 0));
         paint.setTextSize(20);
 
         shapeDrawable = new ShapeDrawable(new OvalShape());
-        shapeDrawable.getPaint().setColor(0xff74AC23);
     }
 
     public List<int[]> getStrokePoints() {
@@ -45,18 +48,20 @@ public class CustomDrawableView extends View {
     }
 
     protected void onDraw(Canvas canvas) {
-        setBackgroundColor(Color.argb(150, 0, 0, 200));
+        setBackgroundColor(backgroundColor);
+        shapeDrawable.getPaint().setColor(brushColor);
+
         for (int[] i : strokes) {
             final int x = i[0] * MultiDraw.screenMatchRatio;
             final int y = i[1] * MultiDraw.screenMatchRatio;
-            final int size = 20*MultiDraw.screenMatchRatio;
+            final int size = 20 * MultiDraw.screenMatchRatio;
 
             shapeDrawable.setBounds(x, y, x + size, y + size);
             shapeDrawable.draw(canvas);
         }
     }
 
-    public boolean addToStrokePoints(ArrayList<int[]> al) {
+    public boolean addToStrokePoints(List<int[]> al) {
         for (int[] i : al) {
             strokes.add(i);
         }
@@ -66,6 +71,11 @@ public class CustomDrawableView extends View {
     public boolean setTouchPattern(int x, int y) {
         strokes.add(new int[]{x, y});
         invalidate();
+        return true;
+    }
+
+    public boolean setBrushColor(int brushColor) {
+        this.brushColor = brushColor;
         return true;
     }
 

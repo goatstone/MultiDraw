@@ -1,5 +1,7 @@
 package com.goatstone.multidraw.trans;
 
+import android.graphics.Color;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,9 +10,10 @@ import java.util.List;
  */
 public class Stroke {
     public List<int[]> strokePoints = new ArrayList();
+    public int color = Color.argb(255, 0, 0, 255);
 
-    public Stroke(){
-        strokePoints.add(new int[]{100,200});
+    public Stroke() {
+        strokePoints.add(new int[]{100, 200});
     }
 
 }

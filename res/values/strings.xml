@@ -7,6 +7,8 @@
     <string name="action_background">Background Color</string>
     <string name="action_log">Log</string>
     <string name="action_messagge">Message</string>
+    <string name="action_color">Color</string>
+    <string name="action_clear">Clear</string>
 
 
     <string name="send">Send</string>

@@ -3,25 +3,34 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.goatstone.multidraw.MainActivity" >
 
-    <item android:id="@+id/action_message"
-        android:title="@string/action_messagge"
-        android:orderInCategory="10"
+    <item android:id="@+id/action_color"
+        android:title="@string/action_color"
+        android:orderInCategory="100"
         app:showAsAction="always" />
 
-    <item android:id="@+id/action_settings"
-        android:title="@string/action_settings"
-        android:orderInCategory="100"
-        app:showAsAction="never" />
+    <item android:id="@+id/action_clear"
+        android:title="@string/action_clear"
+        android:orderInCategory="200"
+        app:showAsAction="always" />
 
-    <item android:id="@+id/action_background"
-        android:title="@string/action_background"
-        android:orderInCategory="100"
+    <item android:id="@+id/action_message"
+        android:title="@string/action_messagge"
+        android:orderInCategory="300"
         app:showAsAction="always" />
 
     <item android:id="@+id/action_log"
         android:title="@string/action_log"
-        android:orderInCategory="100"
+        android:orderInCategory="400"
         app:showAsAction="always" />
 
+    <item android:id="@+id/action_background"
+        android:title="@string/action_background"
+        android:orderInCategory="500"
+        app:showAsAction="never" />
+
+    <item android:id="@+id/action_settings"
+        android:title="@string/action_settings"
+        android:orderInCategory="600"
+        app:showAsAction="never" />
 
 </menu>
