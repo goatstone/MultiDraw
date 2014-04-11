@@ -16,6 +16,6 @@ public class MultiDraw {
 
     //    public int screenMatchRatio = (int)Math.floor( metrics.densityDpi/160 );
     public static int screenMatchRatio = 1;
-    public static int brushColor = Color.argb(255, 250, 250, 0);
+    public static int brushColor = Color.argb(255, 50, 50, 50);
 
 }
