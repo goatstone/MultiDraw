@@ -1,7 +1,6 @@
 package com.goatstone.multidraw;
 
-import android.graphics.Canvas;
-import android.graphics.Paint;
+import android.graphics.Color;
 
 import com.goatstone.multidraw.trans.Stroke;
 
@@ -12,22 +11,18 @@ import java.util.List;
  * Created by goat on 4/7/14.
  */
 public class MultiDraw {
-    private List<Stroke> strokes;
+    public static List<Stroke> strokes = new ArrayList<Stroke>();
+    public static List<Stroke> localStrokes = new ArrayList<Stroke>();
+    public static List<int[]> localStrokePoints = new ArrayList<int[]>();
+
+    //    public int screenMatchRatio = (int)Math.floor( metrics.densityDpi/160 );
     public static int screenMatchRatio = 1;
-//    public int screenMatchRatio = (int)Math.floor( metrics.densityDpi/160 );
+    public static int brushColor = Color.argb(255, 0, 0, 0);
 
     public MultiDraw() {
-        strokes = new ArrayList<Stroke>();
     }
 
-    public boolean addStroke(Stroke stroke){
-        strokes.add(stroke);
-        return true;
-    }
-    public boolean drawStrokes(Canvas canvas){
-        for(Stroke s : strokes){
-            canvas.drawText("xxx", 100 ,100, new Paint());
-        }
-        return true;
+    public static boolean hasStrokes() {
+        return (strokes != null);
     }
 }

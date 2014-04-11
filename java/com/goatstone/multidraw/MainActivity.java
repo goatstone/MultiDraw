@@ -47,6 +47,8 @@ public class MainActivity extends ActionBarActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        new MultiDraw();
+
         // setup layout
         setContentView(R.layout.main);
         linearLayout = (LinearLayout) findViewById(R.id.layout1);
@@ -74,23 +76,23 @@ public class MainActivity extends ActionBarActivity {
 
         brushColorSelectDialog = new BrushColorSelectDialog(linearLayout);
 
-        ////
         DisplayMetrics metrics = getResources().getDisplayMetrics();
 
         customDrawableView = new CustomDrawableView(getApplicationContext());
-        //addContentView(customDrawableView, new ViewGroup.LayoutParams(linearLayout.getWidth(), linearLayout.getHeight()));
         int drawAreaWidth = 580;
         int drawAreaHeight = 850;
+
         int screenMatchRatio = (int) Math.floor(metrics.densityDpi / 160);
         MultiDraw.screenMatchRatio = (int) Math.floor(metrics.densityDpi / 160);
-        Log.i(AppUtil.getTagName(), "density: " + String.valueOf(metrics.densityDpi));
-        Log.i(AppUtil.getTagName(), "screenMatchRatio: " + (Math.floor(metrics.densityDpi / 160)));
-        Log.i(AppUtil.getTagName(), "MultiDraw.screenMatchRatio : " + MultiDraw.screenMatchRatio);
+
+//        Log.i(AppUtil.getTagName(), "density: " + String.valueOf(metrics.densityDpi));
+//        Log.i(AppUtil.getTagName(), "screenMatchRatio: " + (Math.floor(metrics.densityDpi / 160)));
+//        Log.i(AppUtil.getTagName(), "MultiDraw.screenMatchRatio : " + MultiDraw.screenMatchRatio);
 
         customDrawableView.setX(10);
         customDrawableView.setY(10);
-        addContentView(customDrawableView, new ViewGroup.LayoutParams(drawAreaWidth * screenMatchRatio, drawAreaHeight * screenMatchRatio));
 
+        addContentView(customDrawableView, new ViewGroup.LayoutParams(drawAreaWidth * screenMatchRatio, drawAreaHeight * screenMatchRatio));
 
     }
 
@@ -111,62 +113,47 @@ public class MainActivity extends ActionBarActivity {
     };
 
     private View.OnTouchListener onTouchListener = new View.OnTouchListener() {
+
+        // currentStrokePoints
         final List<int[]> currentStokes = new ArrayList<int[]>();
+        // create a stroke that will be sent to the backend in JSON form
         final Stroke stroke = new Stroke();
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            stroke.color = Color.argb(255, 255, 0, 0);
 
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
-                    currentStokes.add(
-                            new int[]{(int) event.getX() / MultiDraw.screenMatchRatio, (int) event.getY() / MultiDraw.screenMatchRatio});
 
-                    List ar = new ArrayList();
-                    ar.add(new int[]{(int) event.getX(), (int) event.getY()});
-                    customDrawableView.setBrushColor(Color.argb(127, 255, 0, 0));
-                    customDrawableView.addToStrokePoints(ar);
+                    stroke.color = MultiDraw.brushColor;
+
+                    MultiDraw.localStrokePoints.add(
+                            new int[]{(int) event.getX() / MultiDraw.screenMatchRatio, (int) event.getY() / MultiDraw.screenMatchRatio});
                     customDrawableView.invalidate();
 
                     break;
                 }
                 case MotionEvent.ACTION_MOVE: {
-                    currentStokes.add(
-                            new int[]{(int) event.getX() / MultiDraw.screenMatchRatio, (int) event.getY() / MultiDraw.screenMatchRatio});
 
-                    List ar = new ArrayList();
-                    ar.add(new int[]{(int) event.getX(), (int) event.getY()});
-                    customDrawableView.addToStrokePoints(ar);
+                    // MD.addLocalStrokePoints()
+                    MultiDraw.localStrokePoints.add(
+                            new int[]{(int) event.getX() / MultiDraw.screenMatchRatio, (int) event.getY() / MultiDraw.screenMatchRatio});
                     customDrawableView.invalidate();
 
                     break;
                 }
                 case MotionEvent.ACTION_UP: {
-                    Log.i(AppUtil.getTagName(), "xx" + currentStokes.size());
+                    
+                    // MD.getLocatStrokePoints();
+                    stroke.strokePoints = MultiDraw.localStrokePoints;
 
-                    stroke.strokePoints = currentStokes;
+                    // Add the stroke to the local stroke collection.
+                    MultiDraw.localStrokes.add(stroke);
+                    // Make the transientContainer into a string to send it to the backend.
+                    String gsonString = gson.toJson(new TransientContainer(stroke));
+                    // send JSON to the backend
+                    AppBackend.sendJSON(gsonString);
 
-                    TransientContainer transientContainer = new TransientContainer(stroke);
-
-                    if (transientContainer.stroke != null) {
-                        Log.i(AppUtil.getTagName(), "stroke has been made and set!!!!!!! !!!!!!");
-
-                        // Make the transientContainer into a string to send it to the backend.
-                        String gsonString = gson.toJson(transientContainer);
-                        AppBackend.sendJSON(gsonString);
-                        Log.i(AppUtil.getTagName(), gsonString);
-
-                        // convert back to Object TransientContainer
-                        TransientContainer newTransientContainer = gson.fromJson(gsonString, TransientContainer.class);
-                        Log.i(AppUtil.getTagName(), String.valueOf(transientContainer.stroke.strokePoints.size()));
-
-
-                        // Add the transientContainer.stroke to the customDrawableView.
-//                        customDrawableView.addToStrokePoints((ArrayList<int[]>) newTransientContainer.stroke.strokePoints);
-//                        customDrawableView.invalidate();
-
-                    }
                     break;
                 }
             }
@@ -204,19 +191,9 @@ public class MainActivity extends ActionBarActivity {
                         messageLogDisplay.append((transientPackage1.textMessage.message));
                     }
                     if (transientPackage1.stroke != null) {
-                        messageLogDisplay.append(("stroke coming in !!!!!!! !!!!!!"));
-                        //messageLogDisplay.append((transientPackage1.stroke.strokePoints).toString());
-//                        customDrawableView.addToStrokePoints((ArrayList<int[]>) transientPackage1.stroke.strokePoints);
-//                         customDrawableView.invalidate();
-
-//                        TransientContainer newTransientContainer = gson.fromJson(gsonString, TransientContainer.class);
-                        Log.i(AppUtil.getTagName(), String.valueOf(transientPackage1.stroke.strokePoints.size()));
-
-                        // Add the transientContainer.stroke to the customDrawableView.
-                        customDrawableView.addToStrokePoints((ArrayList<int[]>) transientPackage1.stroke.strokePoints);
+                        Log.i(AppUtil.getTagName(), String.valueOf("stroke coming in" + transientPackage1.stroke.strokePoints.size()));
+                        MultiDraw.strokes.add(transientPackage1.stroke);
                         customDrawableView.invalidate();
-
-
                     }
                     // Receive a Stroke and display it
                 } // END OK
@@ -315,10 +292,7 @@ public class MainActivity extends ActionBarActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-//        return super.onOptionsItemSelected(item);
+
     }
 
 }

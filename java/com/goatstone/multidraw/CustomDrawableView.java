@@ -3,24 +3,20 @@ package com.goatstone.multidraw;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.view.View;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.goatstone.multidraw.trans.Stroke;
 
 /**
  * Created by goat on 4/7/14.
  */
 public class CustomDrawableView extends View {
+
     private ShapeDrawable shapeDrawable;
     private int x;
     private int y;
-    private List<int[]> strokes;
-    private Paint paint;
-    private int brushColor;
     private int backgroundColor;
 
     public CustomDrawableView(Context context) {
@@ -30,53 +26,48 @@ public class CustomDrawableView extends View {
         y = 200;
         int width = 900;
         int height = 500;
-        strokes = new ArrayList<int[]>();
-        //strokes.add(new int[]{1, 2});
-        strokes.add(new int[]{100, 200});
-        brushColor = Color.argb(255, 0, 0, 255);
-        backgroundColor = Color.argb(255, 250, 250, 250);
-
-        paint = new Paint();
-        paint.setColor(Color.argb(255, 244, 0, 0));
-        paint.setTextSize(20);
-
+        backgroundColor = Color.argb(210, 250, 250, 250);
         shapeDrawable = new ShapeDrawable(new OvalShape());
     }
 
-    public List<int[]> getStrokePoints() {
-        return strokes;
-    }
-
     protected void onDraw(Canvas canvas) {
+
         setBackgroundColor(backgroundColor);
-        shapeDrawable.getPaint().setColor(brushColor);
 
-        for (int[] i : strokes) {
-            final int x = i[0] * MultiDraw.screenMatchRatio;
-            final int y = i[1] * MultiDraw.screenMatchRatio;
+        // draw local points
+        int maxStrokePoints = 400;
+        if (MultiDraw.localStrokePoints.size() > maxStrokePoints) {
+            MultiDraw.localStrokePoints =
+                    MultiDraw.localStrokePoints.subList(MultiDraw.localStrokePoints.size() - maxStrokePoints, MultiDraw.localStrokePoints.size());
+        }
+        for (int[] sp : MultiDraw.localStrokePoints) {
+            final int x = sp[0] * MultiDraw.screenMatchRatio;
+            final int y = sp[1] * MultiDraw.screenMatchRatio;
             final int size = 20 * MultiDraw.screenMatchRatio;
-
+            shapeDrawable.getPaint().setColor(Color.argb(100, 100, 100, 100));
             shapeDrawable.setBounds(x, y, x + size, y + size);
             shapeDrawable.draw(canvas);
         }
-    }
 
-    public boolean addToStrokePoints(List<int[]> al) {
-        for (int[] i : al) {
-            strokes.add(i);
+        // Are there stroke to draw?
+        if (!MultiDraw.hasStrokes()) {
+            return;
         }
-        return true;
-    }
+        // draw the point received from the backend
+        for (Stroke s : MultiDraw.strokes) {
 
-    public boolean setTouchPattern(int x, int y) {
-        strokes.add(new int[]{x, y});
-        invalidate();
-        return true;
-    }
+            shapeDrawable.getPaint().setColor(s.color);
 
-    public boolean setBrushColor(int brushColor) {
-        this.brushColor = brushColor;
-        return true;
+            for (int[] sp : s.strokePoints) {
+                final int x = sp[0] * MultiDraw.screenMatchRatio;
+                final int y = sp[1] * MultiDraw.screenMatchRatio;
+                final int size = 20 * MultiDraw.screenMatchRatio;
+                shapeDrawable.setBounds(x, y, x + size, y + size);
+                shapeDrawable.draw(canvas);
+            }
+
+        }
+
     }
 
 }
