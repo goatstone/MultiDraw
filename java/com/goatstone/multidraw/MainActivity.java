@@ -26,9 +26,6 @@ import com.goatstone.multidraw.trans.TextMessage;
 import com.goatstone.multidraw.trans.TransientContainer;
 import com.google.gson.Gson;
 
-import java.util.ArrayList;
-import java.util.List;
-
 
 public class MainActivity extends ActionBarActivity {
 
@@ -46,8 +43,6 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        new MultiDraw();
 
         // setup layout
         setContentView(R.layout.main);
@@ -114,10 +109,8 @@ public class MainActivity extends ActionBarActivity {
 
     private View.OnTouchListener onTouchListener = new View.OnTouchListener() {
 
-        // currentStrokePoints
-        final List<int[]> currentStokes = new ArrayList<int[]>();
         // create a stroke that will be sent to the backend in JSON form
-        final Stroke stroke = new Stroke();
+        private Stroke currentStroke = new Stroke();
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
@@ -125,32 +118,35 @@ public class MainActivity extends ActionBarActivity {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
 
-                    stroke.color = MultiDraw.brushColor;
+                    final int x = (int) event.getX() / MultiDraw.screenMatchRatio;
+                    final int y = (int) event.getY() / MultiDraw.screenMatchRatio;
 
-                    MultiDraw.localStrokePoints.add(
-                            new int[]{(int) event.getX() / MultiDraw.screenMatchRatio, (int) event.getY() / MultiDraw.screenMatchRatio});
+                    currentStroke = new Stroke();
+                    currentStroke.color = MultiDraw.brushColor;
+                    currentStroke.strokePoints.add(new int[]{x, y});
+                    MultiDraw.localStrokes.add(currentStroke);
+
                     customDrawableView.invalidate();
 
                     break;
                 }
                 case MotionEvent.ACTION_MOVE: {
 
-                    // MD.addLocalStrokePoints()
-                    MultiDraw.localStrokePoints.add(
-                            new int[]{(int) event.getX() / MultiDraw.screenMatchRatio, (int) event.getY() / MultiDraw.screenMatchRatio});
+                    final int x = (int) event.getX() / MultiDraw.screenMatchRatio;
+                    final int y = (int) event.getY() / MultiDraw.screenMatchRatio;
+
+                    currentStroke.strokePoints.add(new int[]{x, y});
+                    MultiDraw.localStrokes.add(currentStroke);
+
                     customDrawableView.invalidate();
 
                     break;
                 }
                 case MotionEvent.ACTION_UP: {
-                    
-                    // MD.getLocatStrokePoints();
-                    stroke.strokePoints = MultiDraw.localStrokePoints;
 
-                    // Add the stroke to the local stroke collection.
-                    MultiDraw.localStrokes.add(stroke);
                     // Make the transientContainer into a string to send it to the backend.
-                    String gsonString = gson.toJson(new TransientContainer(stroke));
+                    String gsonString = gson.toJson(new TransientContainer(currentStroke));
+
                     // send JSON to the backend
                     AppBackend.sendJSON(gsonString);
 

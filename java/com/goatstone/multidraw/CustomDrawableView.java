@@ -34,25 +34,21 @@ public class CustomDrawableView extends View {
 
         setBackgroundColor(backgroundColor);
 
-        // draw local points
-        int maxStrokePoints = 400;
-        if (MultiDraw.localStrokePoints.size() > maxStrokePoints) {
-            MultiDraw.localStrokePoints =
-                    MultiDraw.localStrokePoints.subList(MultiDraw.localStrokePoints.size() - maxStrokePoints, MultiDraw.localStrokePoints.size());
-        }
-        for (int[] sp : MultiDraw.localStrokePoints) {
-            final int x = sp[0] * MultiDraw.screenMatchRatio;
-            final int y = sp[1] * MultiDraw.screenMatchRatio;
-            final int size = 20 * MultiDraw.screenMatchRatio;
-            shapeDrawable.getPaint().setColor(Color.argb(100, 100, 100, 100));
-            shapeDrawable.setBounds(x, y, x + size, y + size);
-            shapeDrawable.draw(canvas);
+        // draw local strokes
+        for (Stroke s : MultiDraw.localStrokes) {
+
+            shapeDrawable.getPaint().setColor(s.color);
+
+            for (int[] sp : s.strokePoints) {
+                final int x = sp[0] * MultiDraw.screenMatchRatio;
+                final int y = sp[1] * MultiDraw.screenMatchRatio;
+                final int size = 20 * MultiDraw.screenMatchRatio;
+                shapeDrawable.setBounds(x, y, x + size, y + size);
+                shapeDrawable.draw(canvas);
+            }
+
         }
 
-        // Are there stroke to draw?
-        if (!MultiDraw.hasStrokes()) {
-            return;
-        }
         // draw the point received from the backend
         for (Stroke s : MultiDraw.strokes) {
 

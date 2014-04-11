@@ -13,7 +13,6 @@ public class Stroke {
     public int color = Color.argb(255, 0, 0, 255);
 
     public Stroke() {
-        strokePoints.add(new int[]{100, 200});
     }
 
 }

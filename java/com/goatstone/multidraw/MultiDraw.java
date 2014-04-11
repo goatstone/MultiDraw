@@ -13,16 +13,9 @@ import java.util.List;
 public class MultiDraw {
     public static List<Stroke> strokes = new ArrayList<Stroke>();
     public static List<Stroke> localStrokes = new ArrayList<Stroke>();
-    public static List<int[]> localStrokePoints = new ArrayList<int[]>();
 
     //    public int screenMatchRatio = (int)Math.floor( metrics.densityDpi/160 );
     public static int screenMatchRatio = 1;
-    public static int brushColor = Color.argb(255, 0, 0, 0);
+    public static int brushColor = Color.argb(255, 250, 250, 0);
 
-    public MultiDraw() {
-    }
-
-    public static boolean hasStrokes() {
-        return (strokes != null);
-    }
 }
