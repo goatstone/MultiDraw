@@ -12,10 +12,18 @@ import java.util.List;
  */
 public class MultiDraw {
     public static List<Stroke> strokes = new ArrayList<Stroke>();
-    public static List<Stroke> localStrokes = new ArrayList<Stroke>();
 
     //    public int screenMatchRatio = (int)Math.floor( metrics.densityDpi/160 );
     public static int screenMatchRatio = 1;
-    public static int brushColor = Color.argb(255, 50, 50, 50);
+    public static int alpha = 255;
+    public static int red = 100;
+    public static int green = 100;
+    public static int blue = 100;
 
+    public static int getBrushColor() {
+        return Color.argb(alpha, red, green, blue);
+    }
+    public static int getGhostBrushColor() {
+        return Color.argb(100, red, green, blue);
+    }
 }

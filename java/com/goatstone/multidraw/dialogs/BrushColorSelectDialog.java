@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.LinearLayout;
@@ -60,7 +59,9 @@ public class BrushColorSelectDialog extends DialogFragment {
                         b = 10;
                         break;
                 }
-                MultiDraw.brushColor = Color.argb(255, r, g, b);
+                MultiDraw.red = r;
+                MultiDraw.green = g;
+                MultiDraw.blue = b;
             }
         });
 

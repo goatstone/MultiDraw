@@ -14,7 +14,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -31,7 +30,6 @@ public class MainActivity extends ActionBarActivity {
 
     private static TextView messageLogDisplay;
     private static MainResultReceiver mainResultReceiver;
-    private Button redButton, greenButton, blueButton, clearButton;
     private Gson gson = new Gson();
     private LinearLayout linearLayout;
     private EditText editText;
@@ -88,7 +86,7 @@ public class MainActivity extends ActionBarActivity {
         customDrawableView.setY(10);
 
         addContentView(customDrawableView, new ViewGroup.LayoutParams(drawAreaWidth * screenMatchRatio, drawAreaHeight * screenMatchRatio));
-
+        customDrawableView.invalidate();
     }
 
     private TextView.OnEditorActionListener onEditorActionListener = new TextView.OnEditorActionListener() {
@@ -122,10 +120,9 @@ public class MainActivity extends ActionBarActivity {
                     final int y = (int) event.getY() / MultiDraw.screenMatchRatio;
 
                     currentStroke = new Stroke();
-                    currentStroke.color = MultiDraw.brushColor;
+                    currentStroke.color = MultiDraw.getGhostBrushColor();
                     currentStroke.strokePoints.add(new int[]{x, y});
-                    MultiDraw.localStrokes.add(currentStroke);
-
+                    MultiDraw.strokes.add(currentStroke);
                     customDrawableView.invalidate();
 
                     break;
@@ -136,13 +133,13 @@ public class MainActivity extends ActionBarActivity {
                     final int y = (int) event.getY() / MultiDraw.screenMatchRatio;
 
                     currentStroke.strokePoints.add(new int[]{x, y});
-                    MultiDraw.localStrokes.add(currentStroke);
-
                     customDrawableView.invalidate();
 
                     break;
                 }
                 case MotionEvent.ACTION_UP: {
+
+                    currentStroke.color = MultiDraw.getBrushColor();
 
                     // Make the transientContainer into a string to send it to the backend.
                     String gsonString = gson.toJson(new TransientContainer(currentStroke));
@@ -188,7 +185,7 @@ public class MainActivity extends ActionBarActivity {
                     }
                     if (transientPackage1.stroke != null) {
                         Log.i(AppUtil.getTagName(), String.valueOf("stroke coming in" + transientPackage1.stroke.strokePoints.size()));
-                        MultiDraw.strokes.add(transientPackage1.stroke);
+                        MultiDraw.strokes.add(MultiDraw.strokes.size(), transientPackage1.stroke);
                         customDrawableView.invalidate();
                     }
                     // Receive a Stroke and display it
@@ -213,29 +210,6 @@ public class MainActivity extends ActionBarActivity {
         AppBackend.sendJSON(gson.toJson(transientContainer));
 
         return true;
-    }
-
-    public void onClick(final View view) {
-        messageLogDisplay.append(".");
-
-        // Color Select :
-        if (view == redButton || view == greenButton || view == blueButton) {
-            int r = 0, g = 0, b = 0;
-            if (view == redButton) {
-                r = 255;
-            } else if (view == greenButton) {
-                g = 255;
-            } else if (view == blueButton) {
-                b = 255;
-            }
-            if (r + g + b != 0) {
-                doBackgroundColorSelect(r, g, b);
-            }
-        }
-        // Clear the log :
-        else if (view == clearButton) {
-            messageLogDisplay.setText("");
-        }
     }
 
     @Override
