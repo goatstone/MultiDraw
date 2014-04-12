@@ -19,11 +19,19 @@ public class MultiDraw {
     public static int red = 100;
     public static int green = 100;
     public static int blue = 100;
+    public static int brushSize = 20;
 
     public static int getBrushColor() {
         return Color.argb(alpha, red, green, blue);
     }
     public static int getGhostBrushColor() {
         return Color.argb(100, red, green, blue);
+    }
+    public static boolean clearStrokeList(){
+        strokes.clear();
+        return true;
+    }
+    public static int getBrushSize(){
+        return  brushSize;
     }
 }

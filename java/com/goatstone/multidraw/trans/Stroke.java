@@ -11,6 +11,7 @@ import java.util.List;
 public class Stroke {
     public List<int[]> strokePoints = new ArrayList();
     public int color = Color.argb(255, 0, 0, 255);
+    public int brushSize = 5;
 
     public Stroke() {
     }

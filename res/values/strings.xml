@@ -8,6 +8,7 @@
     <string name="action_log">Log</string>
     <string name="action_messagge">Message</string>
     <string name="action_color">Color</string>
+    <string name="action_brush">Brush</string>
     <string name="action_clear">Clear</string>
 
 

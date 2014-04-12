@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.goatstone.multidraw.MainActivity" >
 
-    <item android:id="@+id/action_color"
-        android:title="@string/action_color"
+    <item android:id="@+id/action_brush"
+        android:title="@string/action_brush"
         android:orderInCategory="100"
         app:showAsAction="always" />
 
@@ -23,14 +23,14 @@
         android:orderInCategory="400"
         app:showAsAction="always" />
 
-    <item android:id="@+id/action_background"
-        android:title="@string/action_background"
-        android:orderInCategory="500"
-        app:showAsAction="never" />
+    <!--<item android:id="@+id/action_background"-->
+        <!--android:title="@string/action_background"-->
+        <!--android:orderInCategory="500"-->
+        <!--app:showAsAction="never" />-->
 
-    <item android:id="@+id/action_settings"
-        android:title="@string/action_settings"
-        android:orderInCategory="600"
-        app:showAsAction="never" />
+    <!--<item android:id="@+id/action_settings"-->
+        <!--android:title="@string/action_settings"-->
+        <!--android:orderInCategory="600"-->
+        <!--app:showAsAction="never" />-->
 
 </menu>

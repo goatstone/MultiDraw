@@ -121,6 +121,7 @@ public class MainActivity extends ActionBarActivity {
 
                     currentStroke = new Stroke();
                     currentStroke.color = MultiDraw.getGhostBrushColor();
+                    currentStroke.brushSize = MultiDraw.brushSize;
                     currentStroke.strokePoints.add(new int[]{x, y});
                     MultiDraw.strokes.add(currentStroke);
                     customDrawableView.invalidate();
@@ -242,12 +243,13 @@ public class MainActivity extends ActionBarActivity {
 //                Log.i(AppUtil.getTagName(), "background - - - -");
 //                colorSelectDialog.show(getFragmentManager(), "DrawLab");
 //                return true;
-            case R.id.action_color:
-                Log.i(AppUtil.getTagName(), "action_color :  - - - -");
+            case R.id.action_brush:
                 brushColorSelectDialog.show(getFragmentManager(), "MultiDraw: color");
                 return true;
             case R.id.action_clear:
                 Log.i(AppUtil.getTagName(), "action_clear : - - - -");
+                MultiDraw.clearStrokeList();
+                customDrawableView.invalidate();
                 return true;
             case R.id.action_message:
                 Log.i(AppUtil.getTagName(), "message - - - -");

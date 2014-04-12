@@ -50,13 +50,13 @@ public class CustomDrawableView extends View {
         for (Stroke s : MultiDraw.strokes) {
 
             linePaint.setColor(s.color);
-            linePaint.setStrokeWidth(size);
+            linePaint.setStrokeWidth(s.brushSize * MultiDraw.screenMatchRatio);
 
             final int initX = s.strokePoints.get(0)[0] * MultiDraw.screenMatchRatio - offset;
             final int initY = s.strokePoints.get(0)[1] * MultiDraw.screenMatchRatio - offset;
 
             dotPaint.setColor(s.color);
-            canvas.drawOval(new RectF(initX, initY, initX + size, initY + size), dotPaint);
+            canvas.drawOval(new RectF(initX, initY, initX + s.brushSize, initY + s.brushSize), dotPaint);
 
             for (int i = 0; i < s.strokePoints.size(); i++) {
                 final int x = s.strokePoints.get(i)[0] * MultiDraw.screenMatchRatio;
