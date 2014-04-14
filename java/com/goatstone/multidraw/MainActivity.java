@@ -1,42 +1,36 @@
 package com.goatstone.multidraw;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.support.v7.app.ActionBarActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import com.goatstone.multidraw.dialogs.BrushColorSelectDialog;
-import com.goatstone.multidraw.trans.BackgroundProps;
+import com.goatstone.multidraw.dialogs.TextMessageDialog;
 import com.goatstone.multidraw.trans.Stroke;
-import com.goatstone.multidraw.trans.TextMessage;
 import com.goatstone.multidraw.trans.TransientContainer;
 import com.google.gson.Gson;
 
 
 public class MainActivity extends ActionBarActivity {
 
-    private static TextView messageLogDisplay;
-    private static MainResultReceiver mainResultReceiver;
     private Gson gson = new Gson();
+    private static MainResultReceiver mainResultReceiver;
     private LinearLayout linearLayout;
-    private EditText editText;
     private CustomDrawableView customDrawableView;
+    // dialogs
     private ColorSelectDialog colorSelectDialog;
-    private LogViewDialog logViewDialog;
     private BrushColorSelectDialog brushColorSelectDialog;
+    private TextMessageDialog textMessageDialog;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -46,10 +40,6 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.main);
         linearLayout = (LinearLayout) findViewById(R.id.layout1);
         linearLayout.setOnTouchListener(onTouchListener);
-        messageLogDisplay = (TextView) findViewById(R.id.display);
-        messageLogDisplay.setText("init");
-        editText = (EditText) findViewById(R.id.editText);
-        editText.setOnEditorActionListener(onEditorActionListener);
 
         // set up registration / serviceReceiver
         if ((Util.getRegistrationId(getApplicationContext())).isEmpty()) {
@@ -57,17 +47,11 @@ public class MainActivity extends ActionBarActivity {
         }
         setupServiceReceiver();
 
-        // modify layout
-        setMainViewBackground(Color.argb(255, 100, 100, 100));
-        messageLogDisplay.setText(Util.getRegistrationId(getApplicationContext()));
-
         colorSelectDialog = new ColorSelectDialog(linearLayout);
         colorSelectDialog.setArguments(getIntent().getExtras());
 
-        logViewDialog = new LogViewDialog(messageLogDisplay);
-        logViewDialog.setArguments(getIntent().getExtras());
-
         brushColorSelectDialog = new BrushColorSelectDialog(linearLayout);
+        textMessageDialog = new TextMessageDialog();
 
         DisplayMetrics metrics = getResources().getDisplayMetrics();
 
@@ -87,23 +71,8 @@ public class MainActivity extends ActionBarActivity {
 
         addContentView(customDrawableView, new ViewGroup.LayoutParams(drawAreaWidth * screenMatchRatio, drawAreaHeight * screenMatchRatio));
         customDrawableView.invalidate();
+
     }
-
-    private TextView.OnEditorActionListener onEditorActionListener = new TextView.OnEditorActionListener() {
-        @Override
-        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-            boolean handled = false;
-
-            if (actionId == EditorInfo.IME_ACTION_DONE && !v.getText().equals("")) {
-                //handled = true; // setting to true leaves the keyboard open on Samsung Tab
-                final TextMessage textMessage = new TextMessage(v.getText().toString());
-                TransientContainer transientContainer = new TransientContainer(textMessage);
-                AppBackend.sendJSON(gson.toJson(transientContainer));
-                v.setText("");
-            }
-            return handled;
-        }
-    };
 
     private View.OnTouchListener onTouchListener = new View.OnTouchListener() {
 
@@ -155,10 +124,6 @@ public class MainActivity extends ActionBarActivity {
         }
     };
 
-    public void setMainViewBackground(int color) {
-        linearLayout.setBackgroundColor(color);
-    }
-
     private void setupServiceReceiver() {
 
         mainResultReceiver = new MainResultReceiver(new Handler());
@@ -168,28 +133,23 @@ public class MainActivity extends ActionBarActivity {
             public void onReceiveResult(int resultCode, Bundle resultData) {
                 if (resultCode == RESULT_OK) {
 
-                    messageLogDisplay.append("  -  ");
-
                     // Expect to find the Sting with key 'data'
                     String mainBundleString = resultData.getString("data");
                     if (mainBundleString == null) return;
 
                     TransientContainer transientPackage1 = gson.fromJson(mainBundleString, TransientContainer.class);
-                    // modify the background
-                    if (transientPackage1.backgroundProps != null) {
-                        messageLogDisplay.append(String.valueOf(transientPackage1.backgroundProps.getHexColor()));
-                        setMainViewBackground(transientPackage1.backgroundProps.getColor());
-                    }
+
                     // Add a text message to the messaging log
                     if (transientPackage1.textMessage != null) {
-                        messageLogDisplay.append((transientPackage1.textMessage.message));
+                        Toast.makeText(getApplicationContext(),
+                                "Message Received : " + transientPackage1.textMessage.message, Toast.LENGTH_SHORT).show();
+                        textMessageDialog.setLog(transientPackage1.textMessage.message);
                     }
                     if (transientPackage1.stroke != null) {
                         Log.i(AppUtil.getTagName(), String.valueOf("stroke coming in" + transientPackage1.stroke.strokePoints.size()));
                         MultiDraw.strokes.add(MultiDraw.strokes.size(), transientPackage1.stroke);
                         customDrawableView.invalidate();
                     }
-                    // Receive a Stroke and display it
                 } // END OK
             }
         });
@@ -197,20 +157,6 @@ public class MainActivity extends ActionBarActivity {
 
     public static ResultReceiver getMainResultReceiver() {
         return mainResultReceiver;
-    }
-
-    private boolean doBackgroundColorSelect(int r, int g, int b) {
-
-        final BackgroundProps backgroundProps = new BackgroundProps(r, g, b);
-
-        // set this background to selected color
-        setMainViewBackground(backgroundProps.getColor());
-
-        // send a transientContainer to the backend
-        TransientContainer transientContainer = new TransientContainer(backgroundProps);
-        AppBackend.sendJSON(gson.toJson(transientContainer));
-
-        return true;
     }
 
     @Override
@@ -234,15 +180,10 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
+        //The action bar will  automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         switch (item.getItemId()) {
-//            case R.id.action_background:
-//                Log.i(AppUtil.getTagName(), "background - - - -");
-//                colorSelectDialog.show(getFragmentManager(), "DrawLab");
-//                return true;
             case R.id.action_brush:
                 brushColorSelectDialog.show(getFragmentManager(), "MultiDraw: color");
                 return true;
@@ -253,13 +194,7 @@ public class MainActivity extends ActionBarActivity {
                 return true;
             case R.id.action_message:
                 Log.i(AppUtil.getTagName(), "message - - - -");
-//                sizeSelectDialog.show(getFragmentManager(), "DrawLab");
-//BrushColorSelectDialog
-                return true;
-            case R.id.action_log:
-                Log.i(AppUtil.getTagName(), "log - - - -");
-                logViewDialog.show(getFragmentManager(), "MultiDraw : log");
-//                sizeSelectDialog.show(getFragmentManager(), "DrawLab");
+                textMessageDialog.show(getFragmentManager(), "MultiDraw : text message");
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

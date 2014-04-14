@@ -3,98 +3,104 @@ package com.goatstone.multidraw.dialogs;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.KeyEvent;
+import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.goatstone.multidraw.AppBackend;
+import com.goatstone.multidraw.trans.TextMessage;
+import com.goatstone.multidraw.trans.TransientContainer;
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by goat on 4/10/14.
  */
 public class TextMessageDialog extends DialogFragment {
-    private final CharSequence[] colorSelections = {"Send Text:", "Clear Text Message", "Clear Text Log"};
+
+    private String[] intArr = new String[5];
+    private String longStr = "Lorum Ipsum dolor etclfkjxasd  xasd fkasj fdsa lfkjxasd  xasd fkasj fdsa lfkjxasd  xasd fkasj fdsa lfkj\n";
+    private TextView textView;
+    private EditText editText;
     private Gson gson = new Gson();
+    private DialogFragment textMessageDialog;
+    private List<String> messageList = new ArrayList<String>();
 
     public TextMessageDialog() {
-    }
-
-    public boolean setLog(String message) {
-
-        return true;
+        Arrays.fill(intArr, longStr);
+        textMessageDialog = this;
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final EditText input = new EditText(getActivity());
-        input.setBackgroundColor(Color.argb(255, 255, 0, 0));
-
-        final android.widget.TextView text = new TextView(getActivity());
-        text.setText("hello");
+//        Log.i(AppUtil.getTagName(), "on create");
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Send Message");
-//        builder.setView(input);
-//        builder.setMessage("hello builder");
-//        builder.setView(text);
-//        builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-//            public void onClick(DialogInterface dialog, int whichButton) {
-//
-//                if (!input.getText().toString().equals("")) {
-//                    String value = "Message sent: " + input.getText().toString().trim();
-//                    Toast.makeText(getActivity().getApplicationContext(), value, Toast.LENGTH_SHORT).show();
-//                    final TextMessage textMessage = new TextMessage(input.getText().toString().trim());
-//                    TransientContainer transientContainer = new TransientContainer(textMessage);
-//                    AppBackend.sendJSON(gson.toJson(transientContainer));
-//                    input.setText("");
-//                }
-//
-//            }
-//        });
-        builder.setItems(colorSelections, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int item) {
-                Log.i("DrawLab", "item: " + item);
-                switch (item) {
-                    case 0: // Send
-                        break;
-                    case 1: // Clear Message
-                        break;
-                    case 2: // Clear Log
-                        break;
-                    default:
-                        break;
-                }
-//                MultiDraw.brushSize = brushSize;
-//                String gsonString = gson.toJson(new TransientContainer(currentStroke));
+        final LinearLayout ll = new LinearLayout(getActivity());
+        final ScrollView scrollView = new ScrollView(getActivity());
+        final Button button = new Button(getActivity());
+        textView = new TextView(getActivity());
+        textView.setTextSize(20.0f);
 
-                // send JSON to the backend
-//                AppBackend.sendJSON(gsonString);
+        editText = new EditText(getActivity());
+        editText.setMinimumWidth(300);
+        editText.setBackgroundColor(Color.argb(255, 200, 200, 255));
+        editText.setImeOptions(EditorInfo.IME_ACTION_DONE);
+        editText.setInputType(EditorInfo.TYPE_TEXT_VARIATION_SHORT_MESSAGE);
+        editText.setOnEditorActionListener(onEditorActionListener);
 
-            }
+        button.setText("Send A Message");
 
-        });
-//        builder.setIt
-//        final AlertDialog.Builder alert = new AlertDialog.Builder(this);
-//        final EditText input = new EditText(this);
-//        alert.setView(input);
-//        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-//            public void onClick(DialogInterface dialog, int whichButton) {
-//                String value = input.getText().toString().trim();
-//                Toast.makeText(getApplicationContext(), value, Toast.LENGTH_SHORT).show();
-//            }
-//        });
-//
-//        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-//            public void onClick(DialogInterface dialog, int whichButton) {
-//                dialog.cancel();
-//            }
-//        });
-//        alert.show();
-//    }
+        for (String s : messageList) {
+            textView.append(s + "\n");
+        }
+
+        scrollView.setMinimumWidth(100);
+        scrollView.addView(textView);
+
+        ll.setOrientation(LinearLayout.VERTICAL);
+        ll.addView(editText);
+//        ll.addView(button);
+        ll.addView(scrollView);
+
+        builder.setTitle("  Messages ");
+        builder.setMessage("Send a message, review the messages.");
+        builder.setView(ll);
+
         return builder.create();
+    }
+
+
+    public TextView.OnEditorActionListener onEditorActionListener = new TextView.OnEditorActionListener() {
+
+        @Override
+        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+            boolean handled = false;
+
+            if (actionId == EditorInfo.IME_ACTION_DONE && !v.getText().equals("")) {
+//                Log.i(AppUtil.getTagName(), "onEditorActionListener  2 2 2 2 2 2 ");
+
+                //handled = true; // setting to true leaves the keyboard open on Samsung Tab
+                final TextMessage textMessage = new TextMessage(v.getText().toString());
+                TransientContainer transientContainer = new TransientContainer(textMessage);
+                AppBackend.sendJSON(gson.toJson(transientContainer));
+                v.setText("");
+                textMessageDialog.dismiss();
+            }
+            return handled;
+        }
+    };
+
+    public void setLog(String message) {
+        messageList.add(message);
     }
 }
